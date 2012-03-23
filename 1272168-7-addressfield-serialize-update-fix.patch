@@ -1,0 +1,16 @@
+--- a/addressfield.install
++++ b/addressfield.install
+@@ -211,7 +211,11 @@ function addressfield_update_7001() {
+     }
+     $column = $field['field_name'] . '_data';
+     $new_column = $field['field_name'] . '_data_serialized';
+-    db_change_field($table, $column, $new_column, $spec);
+-    db_change_field($revision_table, $column, $new_column, $spec);
++
++    if (db_field_exists($table, $column)) {
++      db_change_field($table, $column, $new_column, $spec);
++      db_change_field($revision_table, $column, $new_column, $spec);
++    }
++
+   }
+ }

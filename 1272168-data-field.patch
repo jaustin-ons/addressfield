@@ -1,0 +1,84 @@
+diff --git a/addressfield.install b/addressfield.install
+index ada5912..c20f964 100644
+--- a/addressfield.install
++++ b/addressfield.install
+@@ -96,8 +96,8 @@ function addressfield_field_schema() {
+       'not null' => FALSE,
+       'default' => '',
+     ),
+-    'data' => array(
+-      'description' => 'Additional data for this address.',
++    'data_serialized' => array(
++      'description' => 'Additional data for this address (serialized).',
+       'type' => 'text',
+       'size' => 'big',
+       'not null' => FALSE,
+@@ -184,3 +184,34 @@ function addressfield_update_7000() {
+     }
+   }
+ }
++
++/**
++ * Rename the data column.
++ */
++function addressfield_update_7001() {
++  $spec = array(
++    'description' => 'Additional data for this address (serialized).',
++    'type' => 'text',
++    'size' => 'big',
++    'not null' => FALSE,
++    'serialize' => TRUE,
++  );
++  $fields = _update_7000_field_read_fields(array(
++    'module' => 'addressfield',
++    'storage_type' => 'field_sql_storage',
++  ));
++  foreach ($fields as $field_name => $field) {
++    if ($field['deleted']) {
++      $table = "field_deleted_data_{$field['id']}";
++      $revision_table = "field_deleted_revision_{$field['id']}";
++    }
++    else {
++      $table = "field_data_{$field['field_name']}";
++      $revision_table = "field_revision_{$field['field_name']}";
++    }
++    $column = $field['field_name'] . '_data';
++    $new_column = $field['field_name'] . '_data_serialized';
++    db_change_field($table, $column, $new_column, $spec);
++    db_change_field($revision_table, $column, $new_column, $spec);
++  }
++}
+diff --git a/addressfield.module b/addressfield.module
+index 177d92b..0a6178e 100644
+--- a/addressfield.module
++++ b/addressfield.module
+@@ -312,6 +312,29 @@ function addressfield_field_info() {
+ }
+ 
+ /**
++ * Implements hook_field_load()
++ */
++function addressfield_field_load($entity_type, $entities, $field, $instances, $langcode, &$items, $age) {
++  foreach ($entities as $id => $entity) {
++    foreach ($items[$id] as $delta => &$item) {
++      if (!empty($item['data_serialized'])) {
++        $item['data'] = unserialize($item['data_serialized']);
++      }
++      unset($item['data_serialized']);
++    }
++  }
++}
++
++/**
++ * Implements hook_field_presave()
++ */
++function addressfield_field_presave($entity_type, $entity, $field, $instance, $langcode, &$items) {
++  foreach ($items as &$item) {
++    $item['data_serialized'] = serialize($item['data']);
++  }
++}
++
++/**
+  * Returns an array of default values for the addressfield form elements.
+  */
+ function addressfield_default_values($available_countries = NULL) {
