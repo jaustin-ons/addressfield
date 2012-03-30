@@ -330,7 +330,7 @@ function addressfield_field_load($entity_type, $entities, $field, $instances, $l
  */
 function addressfield_field_presave($entity_type, $entity, $field, $instance, $langcode, &$items) {
   foreach ($items as &$item) {
-    $item['data_serialized'] = serialize($item['data']);
+    $item['data_serialized'] = isset($item['data']) ? serialize($item['data']) : '';
   }
 }
 
