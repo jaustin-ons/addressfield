@@ -1,0 +1,54 @@
+diff --git a/addressfield.api.php b/addressfield.api.php
+index 3880fd9..6337d13 100644
+--- a/addressfield.api.php
++++ b/addressfield.api.php
+@@ -25,5 +25,27 @@
+  * @ingroup addressfield_format
+  */
+ function CALLBACK_addressfield_format_callback(&$format, $address, $context = array()) {
+-  
++
+ }
++
++/**
++ * Make changes or additions to addressfield values by altering the $items parameter by
++ * reference. There is no return value.
++ *
++ * @param $items
++ *   $entity->{$field['field_name']}[$langcode], or an empty array if unset.
++ * @param $vars
++ *   'entity_type'
++ *     The type of $entity.
++ *   'entity'
++ *     The entity for the operation.
++ *   'field'
++ *     The field structure for the operation.
++ *   'instance'
++ *     The instance structure for $field on $entity's bundle.
++ *   'langcode'
++ *     The language associated with $items.
++ */
++function hook_addressfield_field_presave_alter(&$items, &$vars) {
++
++}
+\ No newline at end of file
+diff --git a/addressfield.module b/addressfield.module
+index 3acc506..9afd167 100644
+--- a/addressfield.module
++++ b/addressfield.module
+@@ -329,6 +329,15 @@ function addressfield_field_load($entity_type, $entities, $field, $instances, $l
+  * Implements hook_field_presave()
+  */
+ function addressfield_field_presave($entity_type, $entity, $field, $instance, $langcode, &$items) {
++
++  drupal_alter('addressfield_field_presave', $items, $vars = array(
++    'entity_type' => $entity_type,
++    'entity' => $entity,
++    'field' => $field,
++    'instance' => $instance,
++    'langcode' => $langcode,
++  ));
++
+   foreach ($items as &$item) {
+     $item['data_serialized'] = isset($item['data']) ? serialize($item['data']) : '';
+   }

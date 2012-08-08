@@ -329,6 +329,15 @@ function addressfield_field_load($entity_type, $entities, $field, $instances, $l
  * Implements hook_field_presave()
  */
 function addressfield_field_presave($entity_type, $entity, $field, $instance, $langcode, &$items) {
+
+  drupal_alter('addressfield_field_presave', $items, $vars = array(
+    'entity_type' => $entity_type,
+    'entity' => $entity,
+    'field' => $field,
+    'instance' => $instance,
+    'langcode' => $langcode,
+  ));
+
   foreach ($items as &$item) {
     $item['data_serialized'] = isset($item['data']) ? serialize($item['data']) : '';
   }
